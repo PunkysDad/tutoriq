@@ -1,38 +1,17 @@
 import React from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
+import AuthenticationFlow from '../components/AuthenticationFlow';
 import HomeScreen from '../screens/HomeScreen';
+import { useAuth } from '../context/AuthContext';
 import { theme } from '../theme';
-
-export type AuthStackParamList = {
-  Login: undefined;
-  Register: undefined;
-};
 
 export type MainStackParamList = {
   Home: undefined;
 };
 
-const AuthStack = createStackNavigator<AuthStackParamList>();
 const MainStack = createStackNavigator<MainStackParamList>();
-
-function AuthNavigator() {
-  return (
-    <AuthStack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.background },
-        headerTintColor: theme.colors.text,
-        headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
-        headerShown: false,
-      }}
-    >
-      <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="Register" component={RegisterScreen} />
-    </AuthStack.Navigator>
-  );
-}
 
 function MainNavigator() {
   return (
@@ -49,12 +28,28 @@ function MainNavigator() {
 }
 
 export default function AppNavigator() {
-  // TODO: Switch between AuthNavigator and MainNavigator based on auth state
-  const isAuthenticated = false;
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+      {isAuthenticated ? <MainNavigator /> : <AuthenticationFlow />}
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+  },
+});
