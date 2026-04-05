@@ -6,13 +6,16 @@ import * as SecureStore from 'expo-secure-store';
 import AuthenticationFlow from '../components/AuthenticationFlow';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import HomeScreen from '../screens/HomeScreen';
+import PaywallScreen from '../screens/PaywallScreen';
 import { useAuth } from '../context/AuthContext';
+import revenueCatService from '../services/revenueCatService';
 import { theme } from '../theme';
 
 const ONBOARDING_KEY = 'tutoriq_onboarding_complete';
 
 export type MainStackParamList = {
   Home: undefined;
+  Paywall: undefined;
 };
 
 const MainStack = createStackNavigator<MainStackParamList>();
@@ -27,6 +30,11 @@ function MainNavigator() {
       }}
     >
       <MainStack.Screen name="Home" component={HomeScreen} />
+      <MainStack.Screen
+        name="Paywall"
+        component={PaywallScreen}
+        options={{ presentation: 'modal', headerTitle: 'Upgrade' }}
+      />
     </MainStack.Navigator>
   );
 }
@@ -34,16 +42,21 @@ function MainNavigator() {
 export default function AppNavigator() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const [revenueCatReady, setRevenueCatReady] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      checkOnboarding();
+      initPostAuth();
     } else {
       setOnboardingComplete(null);
+      setRevenueCatReady(false);
     }
   }, [isAuthenticated, user]);
 
-  const checkOnboarding = async () => {
+  const initPostAuth = async () => {
+    await revenueCatService.configurePurchases(user!.id.toString());
+    setRevenueCatReady(true);
+
     if (user?.role !== 'STUDENT') {
       setOnboardingComplete(true);
       return;
@@ -57,7 +70,7 @@ export default function AppNavigator() {
     setOnboardingComplete(true);
   };
 
-  if (isLoading || (isAuthenticated && onboardingComplete === null)) {
+  if (isLoading || (isAuthenticated && (onboardingComplete === null || !revenueCatReady))) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />

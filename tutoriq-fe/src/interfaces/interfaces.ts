@@ -42,6 +42,17 @@ export interface UpdateUserProfileRequest {
   subjectPreferences?: string[];
 }
 
+export type SubscriptionTier = 'FREE_TRIAL' | 'BASIC' | 'PREMIUM';
+
+export type FeatureKey =
+  | 'AI_TUTOR'
+  | 'CHAT_HISTORY'
+  | 'SUMMARIZATION'
+  | 'PROGRESS_DASHBOARD'
+  | 'PARENT_PORTAL'
+  | 'ANSWER_TAGGING'
+  | 'FLASHCARDS';
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
