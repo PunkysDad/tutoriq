@@ -12,7 +12,8 @@ data class RegisterRequest(
     @field:NotBlank val firstName: String,
     @field:NotBlank val lastName: String,
     val gradeLevel: Int? = null,
-    @field:NotNull val role: UserRole
+    @field:NotNull val role: UserRole,
+    val parentId: UUID? = null
 )
 
 data class LoginRequest(

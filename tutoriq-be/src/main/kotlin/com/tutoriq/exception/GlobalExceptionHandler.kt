@@ -35,4 +35,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(PremiumFeatureException::class)
     fun handlePremiumFeature(ex: PremiumFeatureException): ResponseEntity<Map<String, String>> =
         ResponseEntity.status(HttpStatus.FORBIDDEN).body(mapOf("error" to ex.message!!))
+
+    @ExceptionHandler(UnauthorizedAccessException::class)
+    fun handleUnauthorizedAccess(ex: UnauthorizedAccessException): ResponseEntity<Map<String, String>> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(mapOf("error" to ex.message!!))
 }
