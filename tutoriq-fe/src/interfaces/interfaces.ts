@@ -53,6 +53,28 @@ export type FeatureKey =
   | 'ANSWER_TAGGING'
   | 'FLASHCARDS';
 
+export interface TutorSession {
+  id: number;
+  userId: number;
+  title: string | null;
+  subject: string | null;
+  createdAt: string;
+  updatedAt: string;
+  messages?: TutorMessage[];
+}
+
+export interface TutorMessage {
+  id: number;
+  sessionId: number;
+  role: 'USER' | 'ASSISTANT';
+  content: string;
+  createdAt: string;
+}
+
+export interface SendMessageRequest {
+  content: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;

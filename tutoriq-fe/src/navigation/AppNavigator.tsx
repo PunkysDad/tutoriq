@@ -5,7 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import * as SecureStore from 'expo-secure-store';
 import AuthenticationFlow from '../components/AuthenticationFlow';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
-import HomeScreen from '../screens/HomeScreen';
+import TutorScreen from '../screens/TutorScreen';
 import PaywallScreen from '../screens/PaywallScreen';
 import { useAuth } from '../context/AuthContext';
 import revenueCatService from '../services/revenueCatService';
@@ -14,7 +14,7 @@ import { theme } from '../theme';
 const ONBOARDING_KEY = 'tutoriq_onboarding_complete';
 
 export type MainStackParamList = {
-  Home: undefined;
+  Tutor: undefined;
   Paywall: undefined;
 };
 
@@ -29,7 +29,11 @@ function MainNavigator() {
         headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
       }}
     >
-      <MainStack.Screen name="Home" component={HomeScreen} />
+      <MainStack.Screen
+        name="Tutor"
+        component={TutorScreen}
+        options={{ headerTitle: 'AI Tutor' }}
+      />
       <MainStack.Screen
         name="Paywall"
         component={PaywallScreen}
