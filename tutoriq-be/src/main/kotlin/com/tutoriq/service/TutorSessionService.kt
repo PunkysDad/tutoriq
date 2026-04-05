@@ -16,7 +16,8 @@ class TutorSessionService(
     private val tutorMessageRepository: TutorMessageRepository,
     private val trialGuardService: TrialGuardService,
     private val promptTemplateService: PromptTemplateService,
-    private val claudeService: ClaudeService
+    private val claudeService: ClaudeService,
+    private val chatHistoryService: ChatHistoryService
 ) {
 
     fun startSession(userId: UUID, request: StartSessionRequest): StartSessionResponse {
@@ -76,19 +77,8 @@ class TutorSessionService(
         )
     }
 
-    fun getSessionHistory(userId: UUID, sessionId: UUID): List<TutorMessageResponse> {
-        tutorSessionRepository.findByIdAndUserId(sessionId, userId)
-            ?: throw ResourceNotFoundException("Session not found")
-
-        return tutorMessageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId).map {
-            TutorMessageResponse(
-                messageId = it.id,
-                role = it.role,
-                content = it.content,
-                createdAt = it.createdAt
-            )
-        }
-    }
+    fun getSessionHistory(userId: UUID, sessionId: UUID): List<TutorMessageResponse> =
+        chatHistoryService.getSessionHistory(userId, sessionId)
 
     fun getUserSessions(userId: UUID): List<SessionSummaryResponse> {
         val sessions = tutorSessionRepository.findByUserId(userId)

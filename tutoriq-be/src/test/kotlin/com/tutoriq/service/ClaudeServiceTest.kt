@@ -30,6 +30,7 @@ class ClaudeServiceTest {
         claudeService = ClaudeService(
             apiKey = "test-api-key",
             tutorModel = "claude-sonnet-4-20250514",
+            summaryModel = "claude-haiku-4-5-20251001",
             objectMapper = objectMapper,
             restClient = restClient
         )
