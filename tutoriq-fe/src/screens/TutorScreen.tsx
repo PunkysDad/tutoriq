@@ -14,9 +14,11 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useTutorStore } from '../store/tutorStore';
+import { useUpgrade } from '../context/UpgradeContext';
 import MessageBubble from '../components/tutor/MessageBubble';
 import TypingIndicator from '../components/tutor/TypingIndicator';
 import TrialLimitModal from '../components/TrialLimitModal';
+import HistoryListModal from '../components/history/HistoryListModal';
 import { TutorMessage } from '../interfaces/interfaces';
 import { MainStackParamList } from '../navigation/AppNavigator';
 import { theme } from '../theme';
@@ -32,6 +34,7 @@ type TutorNav = StackNavigationProp<MainStackParamList>;
 
 export default function TutorScreen() {
   const navigation = useNavigation<TutorNav>();
+  const { hasFeatureAccess } = useUpgrade();
   const {
     activeSession,
     messages,
@@ -41,6 +44,7 @@ export default function TutorScreen() {
     trialLimitHit,
     startNewSession,
     sendMessage,
+    loadSession,
     clearActiveSession,
     setError,
     clearTrialLimit,
@@ -48,9 +52,11 @@ export default function TutorScreen() {
 
   const [inputText, setInputText] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [historyVisible, setHistoryVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   const hasMessages = messages.length > 0;
+  const canAccessHistory = hasFeatureAccess('CHAT_HISTORY');
 
   useEffect(() => {
     if (hasMessages) {
@@ -96,6 +102,11 @@ export default function TutorScreen() {
     }
   };
 
+  const handleOpenSession = (sessionId: number) => {
+    setHistoryVisible(false);
+    loadSession(sessionId);
+  };
+
   const renderItem = ({ item }: { item: TutorMessage }) => (
     <MessageBubble message={item} />
   );
@@ -121,6 +132,21 @@ export default function TutorScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
+      {/* Action Bar */}
+      <View style={styles.actionBar}>
+        <TouchableOpacity style={styles.actionButton} onPress={handleNewChat}>
+          <Text style={styles.actionButtonText}>+ New Chat</Text>
+        </TouchableOpacity>
+        {canAccessHistory && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => setHistoryVisible(true)}
+          >
+            <Text style={styles.actionButtonText}>History</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {/* Subject Chips (before first message) */}
       {!hasMessages && (
         <ScrollView
@@ -200,6 +226,13 @@ export default function TutorScreen() {
         }}
         limitType="AI_QUESTIONS"
       />
+
+      {/* History Modal */}
+      <HistoryListModal
+        visible={historyVisible}
+        onClose={() => setHistoryVisible(false)}
+        onOpenSession={handleOpenSession}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -208,6 +241,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  actionBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: theme.spacing.base,
+    paddingVertical: theme.spacing.sm,
+    gap: theme.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  actionButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.base,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+  },
+  actionButtonText: {
+    ...theme.typography.caption,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.primary,
   },
   subjectRow: {
     flexGrow: 0,

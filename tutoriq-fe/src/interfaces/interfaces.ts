@@ -75,6 +75,24 @@ export interface SendMessageRequest {
   content: string;
 }
 
+export interface ChatHistoryEntry {
+  sessionId: number;
+  title: string | null;
+  subject: string | null;
+  messageCount: number;
+  lastMessageAt: string;
+  createdAt: string;
+}
+
+export interface ChatSummaryRequest {
+  sessionIds: number[];
+}
+
+export interface ChatSummaryResponse {
+  summary: string;
+  cached: boolean;
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
