@@ -93,6 +93,21 @@ export interface ChatSummaryResponse {
   cached: boolean;
 }
 
+export interface Tag {
+  id: number;
+  name: string;
+  userId: number;
+  createdAt: string;
+}
+
+export interface CreateTagRequest {
+  name: string;
+}
+
+export interface AssignTagsRequest {
+  tagIds: number[];
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;

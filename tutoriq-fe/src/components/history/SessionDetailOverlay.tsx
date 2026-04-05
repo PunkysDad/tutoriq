@@ -6,12 +6,17 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
-import { TutorMessage } from '../../interfaces/interfaces';
+import { TutorMessage, Tag } from '../../interfaces/interfaces';
+import { useTagStore } from '../../store/tagStore';
+import { useUpgrade } from '../../context/UpgradeContext';
 import chatHistoryService from '../../services/chatHistoryService';
 import MessageBubble from '../tutor/MessageBubble';
+import TagChip from '../tagging/TagChip';
+import TagBottomSheet from '../tagging/TagBottomSheet';
 import { theme } from '../../theme';
 
 interface SessionDetailOverlayProps {
@@ -25,12 +30,20 @@ export default function SessionDetailOverlay({
   sessionId,
   onClose,
 }: SessionDetailOverlayProps) {
+  const { hasFeatureAccess } = useUpgrade();
+  const canTag = hasFeatureAccess('ANSWER_TAGGING');
+  const { sessionTags, loadSessionTags } = useTagStore();
+
   const [messages, setMessages] = useState<TutorMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [tagSheetVisible, setTagSheetVisible] = useState(false);
+
+  const appliedTags: Tag[] = sessionId ? sessionTags[sessionId] ?? [] : [];
 
   useEffect(() => {
     if (visible && sessionId) {
       loadMessages(sessionId);
+      if (canTag) loadSessionTags(sessionId);
     } else {
       setMessages([]);
     }
@@ -58,8 +71,28 @@ export default function SessionDetailOverlay({
             <Text style={styles.backText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Session Detail</Text>
-          <View style={{ width: 60 }} />
+          {canTag ? (
+            <TouchableOpacity onPress={() => setTagSheetVisible(true)}>
+              <Text style={styles.tagButtonText}>Tag</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 60 }} />
+          )}
         </View>
+
+        {/* Applied Tags */}
+        {canTag && appliedTags.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.tagsBar}
+            contentContainerStyle={styles.tagsBarContent}
+          >
+            {appliedTags.map((tag) => (
+              <TagChip key={tag.id} tag={tag} />
+            ))}
+          </ScrollView>
+        )}
 
         {isLoading ? (
           <View style={styles.centered}>
@@ -74,6 +107,12 @@ export default function SessionDetailOverlay({
           />
         )}
       </SafeAreaView>
+
+      <TagBottomSheet
+        visible={tagSheetVisible}
+        sessionId={sessionId}
+        onClose={() => setTagSheetVisible(false)}
+      />
     </Modal>
   );
 }
@@ -105,6 +144,23 @@ const styles = StyleSheet.create({
     ...theme.typography.body,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.text,
+  },
+  tagButtonText: {
+    ...theme.typography.body,
+    color: theme.colors.primary,
+    fontWeight: theme.typography.fontWeight.medium,
+    textAlign: 'right',
+    width: 60,
+  },
+  tagsBar: {
+    flexGrow: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  tagsBarContent: {
+    paddingHorizontal: theme.spacing.base,
+    paddingVertical: theme.spacing.sm,
+    gap: theme.spacing.sm,
   },
   centered: {
     flex: 1,
