@@ -12,6 +12,7 @@ import FlashcardDeckListScreen from '../screens/flashcards/FlashcardDeckListScre
 import FlashcardDeckDetailScreen from '../screens/flashcards/FlashcardDeckDetailScreen';
 import FlashcardStudyScreen from '../screens/flashcards/FlashcardStudyScreen';
 import FlashcardMatchGameScreen from '../screens/flashcards/FlashcardMatchGameScreen';
+import ProgressScreen from '../screens/ProgressScreen';
 import { useAuth } from '../context/AuthContext';
 import revenueCatService from '../services/revenueCatService';
 import { theme } from '../theme';
@@ -31,6 +32,7 @@ export type FlashcardStackParamList = {
 export type MainTabParamList = {
   TutorTab: undefined;
   FlashcardsTab: undefined;
+  ProgressTab: undefined;
 };
 
 // Root stack wrapping tabs + modals
@@ -103,6 +105,18 @@ function MainTabs() {
         name="FlashcardsTab"
         component={FlashcardNavigator}
         options={{ tabBarLabel: 'Flashcards' }}
+      />
+      <Tab.Screen
+        name="ProgressTab"
+        component={ProgressScreen}
+        options={{
+          tabBarLabel: 'Progress',
+          headerShown: true,
+          headerTitle: 'Progress',
+          headerStyle: { backgroundColor: theme.colors.background },
+          headerTintColor: theme.colors.text,
+          headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
+        }}
       />
     </Tab.Navigator>
   );

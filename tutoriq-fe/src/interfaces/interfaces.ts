@@ -142,6 +142,31 @@ export interface UpdateCardRequest {
   answer?: string;
 }
 
+export interface ProgressDashboard {
+  totalSessions: number;
+  totalMessages: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string | null;
+  subjectBreakdown: SubjectProgress[];
+  recentActivity: RecentActivityEntry[];
+}
+
+export interface SubjectProgress {
+  subject: string;
+  sessionCount: number;
+  messageCount: number;
+  lastSessionAt: string | null;
+}
+
+export interface RecentActivityEntry {
+  sessionId: number;
+  subject: string | null;
+  title: string | null;
+  messageCount: number;
+  date: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
