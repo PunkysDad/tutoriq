@@ -3,6 +3,7 @@ package com.tutoriq.service
 import com.tutoriq.exception.ResourceNotFoundException
 import com.tutoriq.model.dto.SendMessageRequest
 import com.tutoriq.model.dto.StartSessionRequest
+import com.tutoriq.model.dto.TutorMessageResponse
 import com.tutoriq.model.entity.*
 import com.tutoriq.repository.TutorMessageRepository
 import com.tutoriq.repository.TutorSessionRepository
@@ -24,6 +25,7 @@ class TutorSessionServiceTest {
     @Mock lateinit var trialGuardService: TrialGuardService
     @Mock lateinit var promptTemplateService: PromptTemplateService
     @Mock lateinit var claudeService: ClaudeService
+    @Mock lateinit var chatHistoryService: ChatHistoryService
 
     @InjectMocks lateinit var tutorSessionService: TutorSessionService
 
@@ -115,31 +117,21 @@ class TutorSessionServiceTest {
     }
 
     @Test
-    fun `getSessionHistory returns messages in order for valid session`() {
-        val session = testSession()
-        val messages = listOf(
-            TutorMessage(sessionId = sessionId, role = MessageRole.USER, content = "Hi"),
-            TutorMessage(sessionId = sessionId, role = MessageRole.ASSISTANT, content = "Hello!")
+    fun `getSessionHistory delegates to chatHistoryService`() {
+        val expected = listOf(
+            TutorMessageResponse(
+                messageId = UUID.randomUUID(),
+                role = MessageRole.USER,
+                content = "Hi",
+                createdAt = java.time.LocalDateTime.now()
+            )
         )
-
-        whenever(tutorSessionRepository.findByIdAndUserId(sessionId, userId)).thenReturn(session)
-        whenever(tutorMessageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId)).thenReturn(messages)
+        whenever(chatHistoryService.getSessionHistory(userId, sessionId)).thenReturn(expected)
 
         val result = tutorSessionService.getSessionHistory(userId, sessionId)
 
-        assertEquals(2, result.size)
-        assertEquals(MessageRole.USER, result[0].role)
-        assertEquals(MessageRole.ASSISTANT, result[1].role)
-    }
-
-    @Test
-    fun `getSessionHistory throws ResourceNotFoundException for wrong userId`() {
-        val wrongUserId = UUID.randomUUID()
-        whenever(tutorSessionRepository.findByIdAndUserId(sessionId, wrongUserId)).thenReturn(null)
-
-        assertThrows<ResourceNotFoundException> {
-            tutorSessionService.getSessionHistory(wrongUserId, sessionId)
-        }
+        assertEquals(expected, result)
+        verify(chatHistoryService).getSessionHistory(userId, sessionId)
     }
 
     @Test

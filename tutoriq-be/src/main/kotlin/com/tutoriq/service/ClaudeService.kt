@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient
 class ClaudeService(
     @Value("\${anthropic.api-key}") private val apiKey: String,
     @Value("\${anthropic.model.tutor}") private val tutorModel: String,
+    @Value("\${anthropic.model.summary}") private val summaryModel: String,
     private val objectMapper: ObjectMapper,
     private val restClient: RestClient
 ) {
@@ -47,6 +48,26 @@ class ClaudeService(
 
         val responseText = responseJson["content"][0]["text"].asText()
         return validateResponse(responseText)
+    }
+
+    fun sendSummaryMessage(systemPrompt: String, userMessage: String): String {
+        val requestBody = mapOf(
+            "model" to summaryModel,
+            "max_tokens" to MAX_TOKENS,
+            "system" to systemPrompt,
+            "messages" to listOf(mapOf("role" to "user", "content" to userMessage))
+        )
+
+        val responseJson = restClient.post()
+            .uri(API_URL)
+            .header("x-api-key", apiKey)
+            .header("anthropic-version", ANTHROPIC_VERSION)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(objectMapper.writeValueAsString(requestBody))
+            .retrieve()
+            .body(JsonNode::class.java)!!
+
+        return responseJson["content"][0]["text"].asText()
     }
 
     private fun validateResponse(response: String): String {
