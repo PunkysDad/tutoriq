@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tutoriq
+    username: tutoriq
+    password: tutoriq
+  jpa:
+    show-sql: true
+
+jwt:
+  secret: local-dev-jwt-secret-replace-in-production

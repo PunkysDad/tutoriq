@@ -1,0 +1,42 @@
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === IDEs ===
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# === Environment ===
+.env
+.env.*
+!.env.example
+
+# === React Native / Expo (frontend) ===
+node_modules/
+.expo/
+dist/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+ios/Pods/
+android/.gradle/
+android/app/build/
+android/build/
+
+# === Spring Boot / Kotlin (backend) ===
+tutoriq-be/build/
+tutoriq-be/.gradle/
+tutoriq-be/out/
+tutoriq-be/bin/
+*.class
+*.jar
+*.war
+*.log
+hs_err_pid*
