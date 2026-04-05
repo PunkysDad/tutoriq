@@ -35,6 +35,13 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface UpdateUserProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  gradeLevel?: string;
+  subjectPreferences?: string[];
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
