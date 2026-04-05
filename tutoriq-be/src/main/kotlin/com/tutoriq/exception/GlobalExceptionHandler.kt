@@ -31,4 +31,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(FlashcardAccessDeniedException::class)
     fun handleFlashcardAccessDenied(ex: FlashcardAccessDeniedException): ResponseEntity<Map<String, String>> =
         ResponseEntity.status(HttpStatus.FORBIDDEN).body(mapOf("error" to ex.message!!))
+
+    @ExceptionHandler(PremiumFeatureException::class)
+    fun handlePremiumFeature(ex: PremiumFeatureException): ResponseEntity<Map<String, String>> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(mapOf("error" to ex.message!!))
 }
