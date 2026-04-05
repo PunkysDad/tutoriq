@@ -19,4 +19,16 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleResourceNotFound(ex: ResourceNotFoundException): ResponseEntity<Map<String, String>> =
         ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapOf("error" to ex.message!!))
+
+    @ExceptionHandler(TrialLimitExceededException::class)
+    fun handleTrialLimitExceeded(ex: TrialLimitExceededException): ResponseEntity<Map<String, String>> =
+        ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(mapOf("error" to ex.message!!))
+
+    @ExceptionHandler(ExchangeLimitExceededException::class)
+    fun handleExchangeLimitExceeded(ex: ExchangeLimitExceededException): ResponseEntity<Map<String, String>> =
+        ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(mapOf("error" to ex.message!!))
+
+    @ExceptionHandler(FlashcardAccessDeniedException::class)
+    fun handleFlashcardAccessDenied(ex: FlashcardAccessDeniedException): ResponseEntity<Map<String, String>> =
+        ResponseEntity.status(HttpStatus.FORBIDDEN).body(mapOf("error" to ex.message!!))
 }
