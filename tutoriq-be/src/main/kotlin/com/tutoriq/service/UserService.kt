@@ -7,6 +7,7 @@ import com.tutoriq.model.dto.AuthResponse
 import com.tutoriq.model.dto.LoginRequest
 import com.tutoriq.model.dto.RegisterRequest
 import com.tutoriq.model.entity.User
+import com.tutoriq.model.entity.UserRole
 import com.tutoriq.repository.UserRepository
 import com.tutoriq.security.JwtTokenProvider
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -25,6 +26,16 @@ class UserService(
             throw EmailAlreadyExistsException("Email ${request.email} is already registered")
         }
 
+        val resolvedParentId = if (request.parentId != null) {
+            val parent = userRepository.findById(request.parentId).orElseThrow {
+                ResourceNotFoundException("Parent user not found")
+            }
+            if (parent.role != UserRole.PARENT) {
+                throw ResourceNotFoundException("Parent user not found")
+            }
+            request.parentId
+        } else null
+
         val user = userRepository.save(
             User(
                 email = request.email,
@@ -32,7 +43,8 @@ class UserService(
                 firstName = request.firstName,
                 lastName = request.lastName,
                 gradeLevel = request.gradeLevel,
-                role = request.role
+                role = request.role,
+                parentId = resolvedParentId
             )
         )
 

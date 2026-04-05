@@ -2,6 +2,7 @@ package com.tutoriq.service
 
 import com.tutoriq.exception.EmailAlreadyExistsException
 import com.tutoriq.exception.InvalidCredentialsException
+import com.tutoriq.exception.ResourceNotFoundException
 import com.tutoriq.model.dto.LoginRequest
 import com.tutoriq.model.dto.RegisterRequest
 import com.tutoriq.model.entity.User
@@ -17,6 +18,8 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import java.util.Optional
+import java.util.UUID
 import org.springframework.security.crypto.password.PasswordEncoder
 
 @ExtendWith(MockitoExtension::class)
@@ -110,6 +113,69 @@ class UserServiceTest {
 
         assertThrows<InvalidCredentialsException> {
             userService.login(request)
+        }
+    }
+
+    @Test
+    fun `register with valid parentId links child to parent`() {
+        val parentId = UUID.randomUUID()
+        val parentUser = User(
+            id = parentId,
+            email = "parent@example.com",
+            passwordHash = "hash",
+            firstName = "Parent",
+            lastName = "User",
+            role = UserRole.PARENT
+        )
+
+        val request = RegisterRequest(
+            email = "child@example.com",
+            password = "password123",
+            firstName = "Child",
+            lastName = "User",
+            role = UserRole.STUDENT,
+            parentId = parentId
+        )
+
+        val savedChild = User(
+            email = "child@example.com",
+            passwordHash = "hashed-password",
+            firstName = "Child",
+            lastName = "User",
+            role = UserRole.STUDENT,
+            parentId = parentId
+        )
+
+        whenever(userRepository.findByEmail(request.email)).thenReturn(null)
+        whenever(userRepository.findById(parentId)).thenReturn(Optional.of(parentUser))
+        whenever(passwordEncoder.encode(request.password)).thenReturn("hashed-password")
+        whenever(userRepository.save(any<User>())).thenReturn(savedChild)
+        whenever(jwtTokenProvider.generateToken(any())).thenReturn("jwt-token")
+
+        val response = userService.register(request)
+
+        assertEquals("jwt-token", response.token)
+        assertEquals("child@example.com", response.email)
+    }
+
+    @Test
+    fun `register with invalid parentId throws ResourceNotFoundException`() {
+        val fakeParentId = UUID.randomUUID()
+
+        val request = RegisterRequest(
+            email = "child@example.com",
+            password = "password123",
+            firstName = "Child",
+            lastName = "User",
+            role = UserRole.STUDENT,
+            parentId = fakeParentId
+        )
+
+        whenever(userRepository.findByEmail(request.email)).thenReturn(null)
+        whenever(userRepository.findById(fakeParentId)).thenReturn(Optional.empty())
+
+        assertThrows<ResourceNotFoundException> {
+            userService.register(request)
         }
     }
 }

@@ -13,3 +13,5 @@ class ExchangeLimitExceededException(message: String) : RuntimeException(message
 class FlashcardAccessDeniedException(message: String) : RuntimeException(message)
 
 class PremiumFeatureException(message: String = "This feature requires a Premium subscription") : RuntimeException(message)
+
+class UnauthorizedAccessException(message: String = "You do not have permission to access this resource") : RuntimeException(message)
