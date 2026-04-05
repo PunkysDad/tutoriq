@@ -167,6 +167,36 @@ export interface RecentActivityEntry {
   date: string;
 }
 
+export interface ParentChildSummary {
+  childId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  gradeLevel: string | null;
+  subjectPreferences: string[];
+  currentStreak: number;
+  lastActiveDate: string | null;
+  totalSessions: number;
+}
+
+export interface ChildDashboard {
+  childId: number;
+  firstName: string;
+  lastName: string;
+  gradeLevel: string | null;
+  totalSessions: number;
+  totalMessages: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string | null;
+  subjectBreakdown: SubjectProgress[];
+  recentActivity: RecentActivityEntry[];
+}
+
+export interface LinkChildRequest {
+  childEmail: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;

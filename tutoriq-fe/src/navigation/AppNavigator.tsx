@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,77 +8,75 @@ import AuthenticationFlow from '../components/AuthenticationFlow';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import TutorScreen from '../screens/TutorScreen';
 import PaywallScreen from '../screens/PaywallScreen';
+import ProgressScreen from '../screens/ProgressScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import FlashcardDeckListScreen from '../screens/flashcards/FlashcardDeckListScreen';
 import FlashcardDeckDetailScreen from '../screens/flashcards/FlashcardDeckDetailScreen';
 import FlashcardStudyScreen from '../screens/flashcards/FlashcardStudyScreen';
 import FlashcardMatchGameScreen from '../screens/flashcards/FlashcardMatchGameScreen';
-import ProgressScreen from '../screens/ProgressScreen';
+import ParentHomeScreen from '../screens/parent/ParentHomeScreen';
+import ChildDashboardScreen from '../screens/parent/ChildDashboardScreen';
 import { useAuth } from '../context/AuthContext';
 import revenueCatService from '../services/revenueCatService';
 import { theme } from '../theme';
 
 const ONBOARDING_KEY = 'tutoriq_onboarding_complete';
 
-// Flashcard sub-stack param list
+// ─── Type exports ─────────────────────────────────────────────────
+
 export type FlashcardStackParamList = {
   FlashcardDeckList: undefined;
   FlashcardDeckDetail: { deckId: number };
   FlashcardStudy: { deckId: number };
   FlashcardMatchGame: { deckId: number };
-  Paywall: undefined;
 };
 
-// Main tab param list
 export type MainTabParamList = {
   TutorTab: undefined;
   FlashcardsTab: undefined;
   ProgressTab: undefined;
+  ProfileTab: undefined;
 };
 
-// Root stack wrapping tabs + modals
 export type MainStackParamList = {
   MainTabs: undefined;
   Paywall: undefined;
 };
 
+export type ParentStackParamList = {
+  ParentHome: undefined;
+  ChildDashboard: { childId: number };
+  Profile: undefined;
+  Paywall: undefined;
+};
+
+// ─── Navigators ───────────────────────────────────────────────────
+
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createStackNavigator<MainStackParamList>();
 const FlashcardStack = createStackNavigator<FlashcardStackParamList>();
+const ParentStack = createStackNavigator<ParentStackParamList>();
+
+const headerDefaults = {
+  headerStyle: { backgroundColor: theme.colors.background },
+  headerTintColor: theme.colors.text,
+  headerTitleStyle: { fontWeight: '600' as const },
+};
+
+// ─── Student Navigators ───────────────────────────────────────────
 
 function FlashcardNavigator() {
   return (
-    <FlashcardStack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.background },
-        headerTintColor: theme.colors.text,
-        headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
-      }}
-    >
-      <FlashcardStack.Screen
-        name="FlashcardDeckList"
-        component={FlashcardDeckListScreen}
-        options={{ headerTitle: 'Flashcards' }}
-      />
-      <FlashcardStack.Screen
-        name="FlashcardDeckDetail"
-        component={FlashcardDeckDetailScreen}
-        options={{ headerTitle: 'Deck' }}
-      />
-      <FlashcardStack.Screen
-        name="FlashcardStudy"
-        component={FlashcardStudyScreen}
-        options={{ headerTitle: 'Study' }}
-      />
-      <FlashcardStack.Screen
-        name="FlashcardMatchGame"
-        component={FlashcardMatchGameScreen}
-        options={{ headerTitle: 'Match Game' }}
-      />
+    <FlashcardStack.Navigator screenOptions={headerDefaults}>
+      <FlashcardStack.Screen name="FlashcardDeckList" component={FlashcardDeckListScreen} options={{ headerTitle: 'Flashcards' }} />
+      <FlashcardStack.Screen name="FlashcardDeckDetail" component={FlashcardDeckDetailScreen} options={{ headerTitle: 'Deck' }} />
+      <FlashcardStack.Screen name="FlashcardStudy" component={FlashcardStudyScreen} options={{ headerTitle: 'Study' }} />
+      <FlashcardStack.Screen name="FlashcardMatchGame" component={FlashcardMatchGameScreen} options={{ headerTitle: 'Match Game' }} />
     </FlashcardStack.Navigator>
   );
 }
 
-function MainTabs() {
+function StudentTabs() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -89,51 +87,52 @@ function MainTabs() {
         headerShown: false,
       }}
     >
-      <Tab.Screen
-        name="TutorTab"
-        component={TutorScreen}
-        options={{
-          tabBarLabel: 'Tutor',
-          headerShown: true,
-          headerTitle: 'AI Tutor',
-          headerStyle: { backgroundColor: theme.colors.background },
-          headerTintColor: theme.colors.text,
-          headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
-        }}
-      />
-      <Tab.Screen
-        name="FlashcardsTab"
-        component={FlashcardNavigator}
-        options={{ tabBarLabel: 'Flashcards' }}
-      />
-      <Tab.Screen
-        name="ProgressTab"
-        component={ProgressScreen}
-        options={{
-          tabBarLabel: 'Progress',
-          headerShown: true,
-          headerTitle: 'Progress',
-          headerStyle: { backgroundColor: theme.colors.background },
-          headerTintColor: theme.colors.text,
-          headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
-        }}
-      />
+      <Tab.Screen name="TutorTab" component={TutorScreen}
+        options={{ tabBarLabel: 'Tutor', headerShown: true, headerTitle: 'AI Tutor', ...headerDefaults }} />
+      <Tab.Screen name="FlashcardsTab" component={FlashcardNavigator}
+        options={{ tabBarLabel: 'Flashcards' }} />
+      <Tab.Screen name="ProgressTab" component={ProgressScreen}
+        options={{ tabBarLabel: 'Progress', headerShown: true, headerTitle: 'Progress', ...headerDefaults }} />
+      <Tab.Screen name="ProfileTab" component={ProfileScreen}
+        options={{ tabBarLabel: 'Profile', headerShown: true, headerTitle: 'Profile', ...headerDefaults }} />
     </Tab.Navigator>
   );
 }
 
-function MainNavigator() {
+function StudentNavigator() {
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
-      <RootStack.Screen name="MainTabs" component={MainTabs} />
-      <RootStack.Screen
-        name="Paywall"
-        component={PaywallScreen}
-        options={{ presentation: 'modal', headerShown: true, headerTitle: 'Upgrade', headerStyle: { backgroundColor: theme.colors.background }, headerTintColor: theme.colors.text }}
-      />
+      <RootStack.Screen name="MainTabs" component={StudentTabs} />
+      <RootStack.Screen name="Paywall" component={PaywallScreen}
+        options={{ presentation: 'modal', headerShown: true, headerTitle: 'Upgrade', ...headerDefaults }} />
     </RootStack.Navigator>
   );
 }
+
+// ─── Parent Navigator ─────────────────────────────────────────────
+
+function ParentNavigator() {
+  return (
+    <ParentStack.Navigator screenOptions={headerDefaults}>
+      <ParentStack.Screen name="ParentHome" component={ParentHomeScreen}
+        options={({ navigation }) => ({
+          headerTitle: 'My Students',
+          headerRight: () => (
+            <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={{ paddingRight: theme.spacing.base }}>
+              <Text style={{ ...theme.typography.bodySmall, color: theme.colors.primary }}>Profile</Text>
+            </TouchableOpacity>
+          ),
+        })}
+      />
+      <ParentStack.Screen name="ChildDashboard" component={ChildDashboardScreen} options={{ headerTitle: 'Activity' }} />
+      <ParentStack.Screen name="Profile" component={ProfileScreen} options={{ headerTitle: 'Profile' }} />
+      <ParentStack.Screen name="Paywall" component={PaywallScreen}
+        options={{ presentation: 'modal', headerTitle: 'Upgrade' }} />
+    </ParentStack.Navigator>
+  );
+}
+
+// ─── Root AppNavigator ────────────────────────────────────────────
 
 export default function AppNavigator() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -153,6 +152,7 @@ export default function AppNavigator() {
     await revenueCatService.configurePurchases(user!.id.toString());
     setRevenueCatReady(true);
 
+    // Parents skip onboarding
     if (user?.role !== 'STUDENT') {
       setOnboardingComplete(true);
       return;
@@ -162,10 +162,7 @@ export default function AppNavigator() {
     setOnboardingComplete(value === 'true');
   };
 
-  const handleOnboardingComplete = () => {
-    setOnboardingComplete(true);
-  };
-
+  // ─── Loading ──────────────────────────────────────────────
   if (isLoading || (isAuthenticated && (onboardingComplete === null || !revenueCatReady))) {
     return (
       <View style={styles.loadingContainer}>
@@ -174,21 +171,20 @@ export default function AppNavigator() {
     );
   }
 
+  // ─── Unauthenticated ─────────────────────────────────────
   if (!isAuthenticated) {
-    return (
-      <NavigationContainer>
-        <AuthenticationFlow />
-      </NavigationContainer>
-    );
+    return <NavigationContainer><AuthenticationFlow /></NavigationContainer>;
   }
 
+  // ─── Onboarding (students only) ──────────────────────────
   if (!onboardingComplete) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />;
+    return <OnboardingFlow onComplete={() => setOnboardingComplete(true)} />;
   }
 
+  // ─── Role-based navigation ───────────────────────────────
   return (
     <NavigationContainer>
-      <MainNavigator />
+      {user?.role === 'PARENT' ? <ParentNavigator /> : <StudentNavigator />}
     </NavigationContainer>
   );
 }
