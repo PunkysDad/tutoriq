@@ -11,3 +11,5 @@ class TrialLimitExceededException(message: String) : RuntimeException(message)
 class ExchangeLimitExceededException(message: String) : RuntimeException(message)
 
 class FlashcardAccessDeniedException(message: String) : RuntimeException(message)
+
+class PremiumFeatureException(message: String = "This feature requires a Premium subscription") : RuntimeException(message)
