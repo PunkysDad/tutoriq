@@ -1,45 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as SecureStore from 'expo-secure-store';
 import AuthenticationFlow from '../components/AuthenticationFlow';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import TutorScreen from '../screens/TutorScreen';
 import PaywallScreen from '../screens/PaywallScreen';
+import FlashcardDeckListScreen from '../screens/flashcards/FlashcardDeckListScreen';
+import FlashcardDeckDetailScreen from '../screens/flashcards/FlashcardDeckDetailScreen';
+import FlashcardStudyScreen from '../screens/flashcards/FlashcardStudyScreen';
+import FlashcardMatchGameScreen from '../screens/flashcards/FlashcardMatchGameScreen';
 import { useAuth } from '../context/AuthContext';
 import revenueCatService from '../services/revenueCatService';
 import { theme } from '../theme';
 
 const ONBOARDING_KEY = 'tutoriq_onboarding_complete';
 
-export type MainStackParamList = {
-  Tutor: undefined;
+// Flashcard sub-stack param list
+export type FlashcardStackParamList = {
+  FlashcardDeckList: undefined;
+  FlashcardDeckDetail: { deckId: number };
+  FlashcardStudy: { deckId: number };
+  FlashcardMatchGame: { deckId: number };
   Paywall: undefined;
 };
 
-const MainStack = createStackNavigator<MainStackParamList>();
+// Main tab param list
+export type MainTabParamList = {
+  TutorTab: undefined;
+  FlashcardsTab: undefined;
+};
 
-function MainNavigator() {
+// Root stack wrapping tabs + modals
+export type MainStackParamList = {
+  MainTabs: undefined;
+  Paywall: undefined;
+};
+
+const Tab = createBottomTabNavigator<MainTabParamList>();
+const RootStack = createStackNavigator<MainStackParamList>();
+const FlashcardStack = createStackNavigator<FlashcardStackParamList>();
+
+function FlashcardNavigator() {
   return (
-    <MainStack.Navigator
+    <FlashcardStack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: theme.colors.background },
         headerTintColor: theme.colors.text,
         headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
       }}
     >
-      <MainStack.Screen
-        name="Tutor"
-        component={TutorScreen}
-        options={{ headerTitle: 'AI Tutor' }}
+      <FlashcardStack.Screen
+        name="FlashcardDeckList"
+        component={FlashcardDeckListScreen}
+        options={{ headerTitle: 'Flashcards' }}
       />
-      <MainStack.Screen
+      <FlashcardStack.Screen
+        name="FlashcardDeckDetail"
+        component={FlashcardDeckDetailScreen}
+        options={{ headerTitle: 'Deck' }}
+      />
+      <FlashcardStack.Screen
+        name="FlashcardStudy"
+        component={FlashcardStudyScreen}
+        options={{ headerTitle: 'Study' }}
+      />
+      <FlashcardStack.Screen
+        name="FlashcardMatchGame"
+        component={FlashcardMatchGameScreen}
+        options={{ headerTitle: 'Match Game' }}
+      />
+    </FlashcardStack.Navigator>
+  );
+}
+
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textTertiary,
+        tabBarStyle: { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.border },
+        tabBarLabelStyle: { ...theme.typography.caption, fontWeight: theme.typography.fontWeight.medium },
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen
+        name="TutorTab"
+        component={TutorScreen}
+        options={{
+          tabBarLabel: 'Tutor',
+          headerShown: true,
+          headerTitle: 'AI Tutor',
+          headerStyle: { backgroundColor: theme.colors.background },
+          headerTintColor: theme.colors.text,
+          headerTitleStyle: { fontWeight: theme.typography.fontWeight.semibold },
+        }}
+      />
+      <Tab.Screen
+        name="FlashcardsTab"
+        component={FlashcardNavigator}
+        options={{ tabBarLabel: 'Flashcards' }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+function MainNavigator() {
+  return (
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      <RootStack.Screen name="MainTabs" component={MainTabs} />
+      <RootStack.Screen
         name="Paywall"
         component={PaywallScreen}
-        options={{ presentation: 'modal', headerTitle: 'Upgrade' }}
+        options={{ presentation: 'modal', headerShown: true, headerTitle: 'Upgrade', headerStyle: { backgroundColor: theme.colors.background }, headerTintColor: theme.colors.text }}
       />
-    </MainStack.Navigator>
+    </RootStack.Navigator>
   );
 }
 

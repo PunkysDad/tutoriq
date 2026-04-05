@@ -108,6 +108,40 @@ export interface AssignTagsRequest {
   tagIds: number[];
 }
 
+export interface FlashcardDeck {
+  id: number;
+  userId: number;
+  title: string;
+  subject: string | null;
+  cardCount: number;
+  createdAt: string;
+  updatedAt: string;
+  cards?: FlashcardCard[];
+}
+
+export interface FlashcardCard {
+  id: number;
+  deckId: number;
+  question: string;
+  answer: string;
+  createdAt: string;
+}
+
+export interface CreateDeckRequest {
+  title: string;
+  subject: string | null;
+}
+
+export interface CreateCardRequest {
+  question: string;
+  answer: string;
+}
+
+export interface UpdateCardRequest {
+  question?: string;
+  answer?: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
