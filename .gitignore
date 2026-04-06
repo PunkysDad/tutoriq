@@ -13,6 +13,7 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+**/application-local.yml
 
 # === React Native / Expo (frontend) ===
 node_modules/
